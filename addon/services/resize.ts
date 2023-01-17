@@ -1,4 +1,5 @@
-import { computed, get, set } from '@ember/object';
+import { get, set } from '@ember/object';
+import { oneWay, readOnly } from '@ember/object/computed';
 import Evented from '@ember/object/evented';
 import { cancel, debounce } from '@ember/runloop';
 import Service from '@ember/service';
@@ -17,11 +18,11 @@ export interface ResizeDefaults {
 }
 
 class ResizeService extends Service.extend(Evented, {
-  debounceTimeout: computed.oneWay('defaultDebounceTimeout'),
-  heightSensitive: computed.oneWay('defaultHeightSensitive'),
-  screenHeight: computed.readOnly('_oldHeight'),
-  screenWidth: computed.readOnly('_oldWidth'),
-  widthSensitive: computed.oneWay('defaultWidthSensitive'),
+  debounceTimeout: oneWay('defaultDebounceTimeout'),
+  heightSensitive: oneWay('defaultHeightSensitive'),
+  screenHeight: readOnly('_oldHeight'),
+  screenWidth: readOnly('_oldWidth'),
+  widthSensitive: oneWay('defaultWidthSensitive'),
 }) {
   public _oldWidth = window.innerWidth;
   public _oldHeight = window.innerHeight;
@@ -35,7 +36,7 @@ class ResizeService extends Service.extend(Evented, {
   constructor() {
     super(...arguments);
     this._setDefaults();
-    this._onResizeHandler = evt => {
+    this._onResizeHandler = (evt) => {
       this._fireResizeNotification(evt);
       const scheduledDebounce = debounce(this, this._fireDebouncedResizeNotification, evt, this.get('debounceTimeout'));
       this._scheduledDebounce = scheduledDebounce;
@@ -55,7 +56,8 @@ class ResizeService extends Service.extend(Evented, {
   }
 
   public _setDefaults() {
-    const defaults = (get(this, 'resizeServiceDefaults') === undefined ? {} as any : get(this, 'resizeServiceDefaults'));
+    const defaults =
+      get(this, 'resizeServiceDefaults') === undefined ? ({} as any) : get(this, 'resizeServiceDefaults');
 
     Object.keys(defaults).map((key: keyof ResizeDefaults) => {
       const classifiedKey = classify(key);
