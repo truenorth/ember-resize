@@ -18,25 +18,33 @@ const ResizeAwareMixin = Mixin.create({
   resizeHeightSensitive: true,
   resizeWidthSensitive: true,
 
+  _removeResizeEvents: undefined,
+  _removeResizeDebouncedEvents: undefined,
+
   didInsertElement() {
     this._super(...arguments);
     const resizeService: ResizeService = (this as any).get('resizeService');
     if (this.get('resizeEventsEnabled')) {
-      resizeService.on('didResize', this, this._handleResizeEvent);
+      resizeService.on('didResize', this, this._handleResizeEvent)
+      this._removeResizeEvents = () => {
+        resizeService.off('didResize', this, this._handleResizeEvent)
+      }
     }
     if (this.get('resizeDebouncedEventsEnabled')) {
-      resizeService.on('debouncedDidResize', this, this._handleDebouncedResizeEvent);
+      resizeService.on('debouncedDidResize', this, this._handleDebouncedResizeEvent)
+      this._removeResizeDebouncedEvents = () => {
+        resizeService.off('debouncedDidResize', this, this._handleDebouncedResizeEvent)
+      }
     }
   },
 
   willDestroyElement() {
     this._super(...arguments);
-    const resizeService: ResizeService = (this as any).get('resizeService');
-    if (this.get('resizeEventsEnabled')) {
-      resizeService.off('didResize', this, this._handleResizeEvent);
+    if (this.get('_removeResizeEvents')) {
+      this._removeResizeEvents()
     }
-    if (this.get('resizeDebouncedEventsEnabled')) {
-      resizeService.off('debouncedDidResize', this, this._handleDebouncedResizeEvent);
+    if (this.get('_removeResizeDebouncedEvents')) {
+      this._removeResizeDebouncedEvents()
     }
   },
 
