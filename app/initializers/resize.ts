@@ -1,16 +1,16 @@
 // eslint-disable-next-line no-unused-vars
 import Application from '@ember/application';
-import { getWithDefault } from '@ember/object';
+import { get } from '@ember/object';
 import ResizeService from 'ember-resize/services/resize';
 import config from '../config/environment';
 
 export function initialize(application: Pick<Application, 'register'|'inject'|'unregister'|'resolveRegistration'>) {
-  const resizeServiceDefaults = getWithDefault(config, 'resizeServiceDefaults', {
+  const resizeServiceDefaults = (get(config, 'resizeServiceDefaults') === undefined ? {
     debounceTimeout: 200,
     heightSensitive: true,
     widthSensitive: true,
-  });
-  const injectionFactories = getWithDefault(resizeServiceDefaults, 'injectionFactories', ['view', 'component']) || [];
+  } : get(config, 'resizeServiceDefaults'));
+  const injectionFactories = (get(resizeServiceDefaults, 'injectionFactories') === undefined ? ['view', 'component'] : get(resizeServiceDefaults, 'injectionFactories')) || [];
 
   application.unregister('config:resize-service');
 

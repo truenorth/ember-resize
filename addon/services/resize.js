@@ -4,19 +4,6 @@ import Evented from '@ember/object/evented';
 import { cancel, debounce } from '@ember/runloop';
 import Service from '@ember/service';
 import { classify } from '@ember/string';
-
-declare global {
-  // tslint:disable-next-line:variable-name
-  const FastBoot: {} | undefined;
-}
-
-export interface ResizeDefaults {
-  widthSensitive?: boolean;
-  heightSensitive?: boolean;
-  debounceTimeout?: number;
-  injectionFactories?: string[];
-}
-
 class ResizeService extends Service.extend(Evented, {
   debounceTimeout: oneWay('defaultDebounceTimeout'),
   heightSensitive: oneWay('defaultHeightSensitive'),
@@ -24,17 +11,12 @@ class ResizeService extends Service.extend(Evented, {
   screenWidth: readOnly('_oldWidth'),
   widthSensitive: oneWay('defaultWidthSensitive'),
 }) {
-  public _oldWidth = window.innerWidth;
-  public _oldHeight = window.innerHeight;
-  public _oldWidthDebounced = window.innerWidth;
-  public _oldHeightDebounced = window.innerHeight;
-
-  public resizeServiceDefaults!: Partial<ResizeDefaults>;
-
-  public _onResizeHandler?: (this: Window, evt: UIEvent) => void;
-  public _scheduledDebounce?: ReturnType<typeof debounce>;
   constructor() {
     super(...arguments);
+    this._oldWidth = window.innerWidth;
+    this._oldHeight = window.innerHeight;
+    this._oldWidthDebounced = window.innerWidth;
+    this._oldHeightDebounced = window.innerHeight;
     this._setDefaults();
     this._onResizeHandler = (evt) => {
       this._fireResizeNotification(evt);
@@ -45,8 +27,7 @@ class ResizeService extends Service.extend(Evented, {
       this._installResizeListener();
     }
   }
-
-  public destroy() {
+  destroy() {
     this._super(...arguments);
     if (typeof FastBoot === 'undefined') {
       this._uninstallResizeListener();
@@ -54,62 +35,53 @@ class ResizeService extends Service.extend(Evented, {
     this._cancelScheduledDebounce();
     return this;
   }
-
-  public _setDefaults() {
-    const defaults =
-      get(this, 'resizeServiceDefaults') === undefined ? ({} as any) : get(this, 'resizeServiceDefaults');
-
-    Object.keys(defaults).map((key: keyof ResizeDefaults) => {
+  _setDefaults() {
+    const defaults = get(this, 'resizeServiceDefaults') === undefined ? {} : get(this, 'resizeServiceDefaults');
+    Object.keys(defaults).map((key) => {
       const classifiedKey = classify(key);
       const defaultKey = `default${classifiedKey}`;
-      return set(this as any, defaultKey, defaults[key]);
+      return set(this, defaultKey, defaults[key]);
     });
   }
-
-  public _hasWindowSizeChanged(w: number, h: number, debounced = false) {
+  _hasWindowSizeChanged(w, h, debounced = false) {
     const wKey = debounced ? '_oldWidthDebounced' : '_oldWidth';
     const hKey = debounced ? '_oldHeightDebounced' : '_oldHeight';
     return (
       (this.get('widthSensitive') && w !== this.get(wKey)) || (this.get('heightSensitive') && h !== this.get(hKey))
     );
   }
-
-  public _updateCachedWindowSize(w: number, h: number, debounced = false) {
+  _updateCachedWindowSize(w, h, debounced = false) {
     const wKey = debounced ? '_oldWidthDebounced' : '_oldWidth';
     const hKey = debounced ? '_oldHeightDebounced' : '_oldHeight';
     this.set(wKey, w);
     this.set(hKey, h);
   }
-
-  public _installResizeListener() {
+  _installResizeListener() {
     if (!this._onResizeHandler) {
       return;
     }
     window.addEventListener('resize', this._onResizeHandler);
   }
-
-  public _uninstallResizeListener() {
+  _uninstallResizeListener() {
     if (!this._onResizeHandler) {
       return;
     }
     window.removeEventListener('resize', this._onResizeHandler);
   }
-
-  public _cancelScheduledDebounce() {
+  _cancelScheduledDebounce() {
     if (!this._scheduledDebounce) {
       return;
     }
     cancel(this._scheduledDebounce);
   }
-
-  public _fireResizeNotification(evt: UIEvent) {
+  _fireResizeNotification(evt) {
     const { innerWidth, innerHeight } = window;
     if (this._hasWindowSizeChanged(innerWidth, innerHeight)) {
       this.trigger('didResize', evt);
       this._updateCachedWindowSize(innerWidth, innerHeight);
     }
   }
-  public _fireDebouncedResizeNotification(evt: UIEvent) {
+  _fireDebouncedResizeNotification(evt) {
     const { innerWidth, innerHeight } = window;
     if (this._hasWindowSizeChanged(innerWidth, innerHeight, true)) {
       this.trigger('debouncedDidResize', evt);
@@ -117,5 +89,4 @@ class ResizeService extends Service.extend(Evented, {
     }
   }
 }
-
 export default ResizeService;
