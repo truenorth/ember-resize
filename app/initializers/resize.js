@@ -10,18 +10,11 @@ export function initialize(application) {
           widthSensitive: true,
         }
       : get(config, 'resizeServiceDefaults');
-  const injectionFactories =
-    (get(resizeServiceDefaults, 'injectionFactories') === undefined
-      ? ['view', 'component']
-      : get(resizeServiceDefaults, 'injectionFactories')) || [];
   application.unregister('config:resize-service');
   application.register('config:resize-service', resizeServiceDefaults, { instantiate: false });
   application.register('service:resize', ResizeService);
   const resizeService = application.resolveRegistration('service:resize');
   resizeService.prototype.resizeServiceDefaults = resizeServiceDefaults;
-  injectionFactories.forEach((factory) => {
-    application.inject(factory, 'resizeService', 'service:resize');
-  });
 }
 export default {
   initialize,
