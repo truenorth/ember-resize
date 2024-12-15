@@ -17,9 +17,9 @@
   },
   "homepage": "https://github.com/mike-north/ember-resize",
   "devDependencies": {
-    "@commitlint/cli": "7.6.1",
-    "@commitlint/config-conventional": "7.6.0",
-    "@commitlint/travis-cli": "7.6.1",
+    "@commitlint/cli": "19.6.1",
+    "@commitlint/config-conventional": "19.6.0",
+    "@commitlint/travis-cli": "19.6.1",
     "@mike-north/js-lib-renovate-config": "1.2.0",
     "@mike-north/js-lib-semantic-release-config": "1.0.1",
     "@types/ember": "3.0.29",
