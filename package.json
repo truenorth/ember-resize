@@ -54,7 +54,7 @@
     "loader.js": "4.7.0",
     "qunit-dom": "2.0.0",
     "semantic-release": "15.12.5",
-    "typescript": "3.2.4",
+    "typescript": "5.7.3",
     "typescript-eslint-parser": "21.0.2"
   },
   "keywords": [
